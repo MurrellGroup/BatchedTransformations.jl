@@ -28,7 +28,20 @@ using ChainRulesTestUtils: test_rrule
     end
 
     @testset "transformations.jl" begin
-        
+        struct FooTransformations{A<:AbstractArray} <: Transformations; values::A end
+        t = FooTransformations(rand(Float64, ()))
+        x = rand(3, 2, 4)
+        @test_throws ErrorException transform(t, x)
+        @test_throws ErrorException inv(t)
+        @test_throws ErrorException inverse_transform(t, x)
+        @test_throws ErrorException t ∘ x
+        @test_throws ErrorException t(x)
+
+        io = IOBuffer()
+        show(io, MIME("text/plain"), t)
+        str = String(take!(io))
+        @test str == "FooTransformations{Array{Float64, 0}}"
+
     end
 
     @testset "inverse.jl" begin
