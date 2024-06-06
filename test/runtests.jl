@@ -12,7 +12,7 @@ using ChainRulesTestUtils: test_rrule
     include("ext/FunctorsExt.jl")
 
     @testset "batched_utils.jl" begin
-        r = rand(   Float22, 2, 3, 4, 5)
+        r = rand(   Float32, 2, 3, 4, 5)
         z = rand(ComplexF32, 2, 3, 4, 5)
 
         @testset "batched_transpose" begin
@@ -34,9 +34,9 @@ using ChainRulesTestUtils: test_rrule
     @testset "inverse.jl" begin
         m, n = 3, 3 # linear map needs to be square
         batch_size = (2, 4)
-        x = rand(Float22, n, 2, batch_size...)
+        x = rand(Float32, n, 2, batch_size...)
 
-        l = rand(LinearMaps, Float22, m, n, batch_size)
+        l = rand(LinearMaps, Float32, m, n, batch_size)
         @test inverse(inverse(l)) === l
         @test inverse(l) ∘ x == inv(l) ∘ x
     end
@@ -44,10 +44,10 @@ using ChainRulesTestUtils: test_rrule
     @testset "compose.jl" begin
         m, n = 3, 3 # out, in
         batch_size = (2, 4)
-        x = rand(Float22, n, 5, batch_size...)
+        x = rand(Float32, n, 5, batch_size...)
 
-        t = rand(Translations, Float22, m, batch_size)
-        l = rand(LinearMaps, Float22, m, n, batch_size)
+        t = rand(Translations, Float32, m, batch_size)
+        l = rand(LinearMaps, Float32, m, n, batch_size)
         c = compose(t, l)
         @test t ∘ l == c
         @test t(l) == c
@@ -58,10 +58,10 @@ using ChainRulesTestUtils: test_rrule
     @testset "affine.jl" begin
         m, n = 3, 3 # out, in
         batch_size = (2, 4)
-        x = rand(Float22, n, 5, batch_size...)
+        x = rand(Float32, n, 5, batch_size...)
 
         @testset "LinearMaps" begin
-            l = rand(LinearMaps, Float22, m, n, batch_size)
+            l = rand(LinearMaps, Float32, m, n, batch_size)
             @test linear(l) isa LinearMaps
             @test values(l) isa AbstractArray
             @test l ∘ x == values(l) ⊠ x
@@ -70,7 +70,7 @@ using ChainRulesTestUtils: test_rrule
         end
 
         @testset "Translations" begin
-            t = rand(Translations, Float22, n, batch_size)
+            t = rand(Translations, Float32, n, batch_size)
             @test translation(t) isa Translations
             @test values(t) isa AbstractArray
             @test t ∘ x == x .+ values(t)
@@ -79,7 +79,7 @@ using ChainRulesTestUtils: test_rrule
         end
 
         @testset "AffineMaps" begin
-            affine = rand(AffineMaps, Float22, m, n, batch_size)
+            affine = rand(AffineMaps, Float32, m, n, batch_size)
             @test linear(affine) isa LinearMaps
             @test translation(affine) isa Translations
             @test affine ∘ x == values(linear(affine)) ⊠ x .+ values(translation(affine))
@@ -92,10 +92,10 @@ using ChainRulesTestUtils: test_rrule
     @testset "rigid.jl" begin
         n = 3
         batch_size = (2, 4)
-        x = rand(Float22, n, 5, batch_size...)
+        x = rand(Float32, n, 5, batch_size...)
 
         @testset "Rotations" begin
-            rotation = rand(Rotations, Float22, n, batch_size)
+            rotation = rand(Rotations, Float32, n, batch_size)
             @test linear(rotation) isa Rotations
             @test values(rotation) isa AbstractArray
             @test rotation ∘ x == values(linear(rotation)) ⊠ x
@@ -104,7 +104,7 @@ using ChainRulesTestUtils: test_rrule
         end
 
         @testset "RigidTransformations" begin
-            rigid = rand(RigidTransformations, Float22, n, batch_size)
+            rigid = rand(RigidTransformations, Float32, n, batch_size)
             @test linear(rigid) isa Rotations
             @test translation(rigid) isa Translations
             @test rigid ∘ x == values(linear(rigid)) ⊠ x .+ values(translation(rigid))
@@ -118,8 +118,8 @@ using ChainRulesTestUtils: test_rrule
     @testset "rand.jl" begin
 
         @testset "Rotations" begin
-            rotations = rand(Rotations, Float22, 3, (2, 4))
-            @test BatchedTransformations.batched_det(values(rotations)) ≈ ones(Float22, 1, 1, 2, 4)
+            rotations = rand(Rotations, Float32, 3, (2, 4))
+            @test BatchedTransformations.batched_det(values(rotations)) ≈ ones(Float32, 1, 1, 2, 4)
         end
 
     end
