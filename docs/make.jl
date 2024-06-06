@@ -7,10 +7,12 @@ makedocs(;
     modules=[BatchedTransformations],
     authors="anton083 <anton.oresten42@gmail.com> and contributors",
     sitename="BatchedTransformations.jl",
+    doctest=true,
     format=Documenter.HTML(;
-        canonical="https://anton083.github.io/BatchedTransformations.jl",
+        canonical="https://murrellgroup.github.io/BatchedTransformations.jl",
         edit_link="main",
         assets=String[],
+        prettyurls = get(ENV, "CI", "false") == "true",
     ),
     pages=[
         "Home" => "index.md",
@@ -18,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/anton083/BatchedTransformations.jl",
+    repo="github.com/MurrellGroup/BatchedTransformations.jl.git",
     devbranch="main",
 )

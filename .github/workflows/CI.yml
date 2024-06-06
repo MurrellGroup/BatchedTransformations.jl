@@ -68,3 +68,7 @@ jobs:
           using BatchedTransformations
           DocMeta.setdocmeta!(BatchedTransformations, :DocTestSetup, :(using BatchedTransformations); recursive=true)
           doctest(BatchedTransformations)
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v3
+        with:
+          files: lcov.info
