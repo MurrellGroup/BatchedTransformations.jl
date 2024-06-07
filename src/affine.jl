@@ -40,8 +40,8 @@ Base.inv(t::Translations) = Translations(-values(t))
 
 const AbstractAffineMaps = ComposedTransformations{T,L} where {T<:Translations,L<:AbstractLinearMaps}
 
-@inline translation(t::AbstractAffineMaps) = t.t2
-@inline linear(t::AbstractAffineMaps) = t.t1
+@inline translation(t::AbstractAffineMaps) = outer(t)
+@inline linear(t::AbstractAffineMaps) = inner(t)
 
 const AffineMaps = AbstractAffineMaps{<:Translations,<:LinearMaps}
 

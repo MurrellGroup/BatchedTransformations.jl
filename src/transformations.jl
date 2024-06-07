@@ -11,8 +11,8 @@ transform(t::Transformations, ::AbstractArray) = error("transform not defined fo
 Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t))")
 inverse_transform(t::Transformations, x::AbstractArray) = transform(inv(t), x)
 
-Base.:(∘)(t::Transformations, x::AbstractArray) = transform(t, x)
-(t::Transformations)(x::AbstractArray) = transform(t, x)
+@inline Base.:(∘)(t::Transformations, x::AbstractArray) = transform(t, x)
+@inline (t::Transformations)(x::AbstractArray) = transform(t, x)
 
 function Base.show(io::IO, ::MIME"text/plain", t::Transformations)
     print(io, summary(t))
