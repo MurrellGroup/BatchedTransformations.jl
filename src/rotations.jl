@@ -1,15 +1,16 @@
 # Rotations
 # ---------
 
-struct Rotations{L<:LinearMaps} <: AbstractLinearMaps
-    linear::L
+struct Rotations{A<:AbstractArray} <: AbstractLinearMaps
+    values::A
 end
 
-Rotations(rotations::AbstractArray) = Rotations(LinearMaps(rotations))
+@inline Base.values(t::Rotations) = t.values
 
-@inline Base.values(t::Rotations) = values(t.linear)
+Base.inv(t::Rotations{<:AbstractArray{<:Any,3}}) = Rotations(batched_transpose(values(t)))
 
-Base.inv(t::Rotations) = Rotations(batched_transpose(values(t)))
+# would ideally be a lazy transpose, but NNlib.batched_transpose only allows for 1 batch dimension
+Base.inv(t::Rotations{<:AbstractArray{<:Any,N}}) where N = Rotations(permutedims(values(t), (2, 1, 3:N...)))
 
 # Rigid
 # -----

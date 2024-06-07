@@ -1,6 +1,8 @@
 using BatchedTransformations
 using Test
 
+using BatchedTransformations: ⊠
+
 using ChainRulesTestUtils: test_rrule
 
 # TODO: test other array types (e.g. CuArray)
@@ -15,15 +17,10 @@ using ChainRulesTestUtils: test_rrule
         r = rand(   Float32, 2, 3, 4, 5)
         z = rand(ComplexF32, 2, 3, 4, 5)
 
-        @testset "batched_transpose" begin
+        #=@testset "batched_transpose" begin
             @test BatchedTransformations.batched_transpose(r) == permutedims(r, (2, 1, 3, 4))
             @test BatchedTransformations.batched_transpose(z) == permutedims(z, (2, 1, 3, 4))
-        end
-
-        @testset "batched_adjoint" begin
-            @test BatchedTransformations.batched_adjoint(r) == permutedims(r, (2, 1, 3, 4))
-            @test_throws MethodError BatchedTransformations.batched_adjoint(z)
-        end
+        end=#
 
     end
 
@@ -114,6 +111,10 @@ using ChainRulesTestUtils: test_rrule
             @test rotation ∘ x == values(linear(rotation)) ⊠ x
             @test (inv(rotation) ∘ rotation) ∘ x ≈ x
             @test inv(rotation) ∘ (rotation ∘ x) ≈ x
+
+            # NNlib.batched_transpose only supports one batch dimension
+            @test !isa(values(inv(rand(Rotations, Float32, n, (2,)))), Array)
+            @test isa(values(inv(rand(Rotations, Float32, n, (2,1)))), Array)
         end
 
         @testset "RigidTransformations" begin

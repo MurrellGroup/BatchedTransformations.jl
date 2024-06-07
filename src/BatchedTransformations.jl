@@ -1,8 +1,5 @@
 module BatchedTransformations
 
-using NNlib: ⊠
-export ⊠
-
 include("batched_utils.jl")
 
 include("transformations.jl")
