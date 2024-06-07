@@ -3,15 +3,20 @@
 """
     ComposedTransformations{Outer<:Transformations,Inner<:Transformations}
 
-A `ComposedTransformations` contains two transformations `outer` and `inner` that are composed.
-It can be constructed with `compose(outer, inner)`, `outer ∘ inner`, and `outer(inner)`, where inner is the
-transformation to be applied first, and `outer` second.
+A `ComposedTransformations` contains two transformations `t2` and `t1` that are composed.
+It can be constructed with `compose(t2, t1)`, `t2 ∘ t1`, and `t2(t1)`, where `t1` is the
+transformation to be applied first, and `t2` second.
 """
 struct ComposedTransformations{Outer<:Transformations,Inner<:Transformations} <: Transformations
     outer::Outer
     inner::Inner
 end
 
+"""
+    compose(t2, t1)
+    t2 ∘ t1
+    t2(t1)
+"""
 @inline compose(outer::Transformations, inner::Transformations) = ComposedTransformations(outer, inner)
 
 @inline Base.:(∘)(outer::Transformations, inner::Transformations) = compose(outer, inner)

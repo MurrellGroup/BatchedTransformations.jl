@@ -6,6 +6,11 @@ A `Transformations` `t` can be applied to `x` with `transform(t, x)`, `t ∘ x`,
 """
 abstract type Transformations end
 
+"""
+    transform(t, x)
+    t ∘ x
+    t(x)
+"""
 transform(t::Transformations, ::AbstractArray) = error("transform not defined for $(typeof(t))")
 
 Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t))")
