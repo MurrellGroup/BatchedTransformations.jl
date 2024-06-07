@@ -9,8 +9,8 @@ using ChainRulesCore
 using BatchedTransformations: batched_transpose
 
 function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, x::AbstractArray)
-    outer, inner = outer(rigid), inner(rigid)
-    t, R = values(outer), values(inner)
+    translations, rotations = outer(rigid), linear(rigid)
+    t, R = values(translations), values(rotations)
 
     y = R ⊠ x .+ t
 
@@ -21,9 +21,9 @@ function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, 
         Δt = @thunk(sum(Δy, dims=2))
         Δx = @thunk(batched_transpose(R) ⊠ Δy)
 
-        Δouter = Tangent{typeof(outer)}(; values=Δt)
-        Δinner = Tangent{typeof(inner)}(; linear=Tangent{typeof(inner.linear)}(; values=ΔR))
-        Δrigid = Tangent{typeof(rigid)}(; outer=Δouter, inner=Δinner)
+        Δtranslations = Tangent{typeof(translations)}(; values=Δt)
+        Δrotations = Tangent{typeof(rotations)}(; linear=Tangent{typeof(rotations.linear)}(; values=ΔR))
+        Δrigid = Tangent{typeof(rigid)}(; outer=Δtranslations, inner=Δrotations)
 
         return NoTangent(), Δrigid, Δx
     end
@@ -32,8 +32,8 @@ function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, 
 end
 
 function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransformations, x::AbstractArray)
-    outer, inner = outer(rigid), inner(rigid)
-    t, R = values(outer), values(inner)
+    translations, rotations = translation(rigid), linear(rigid)
+    t, R = values(translations), values(rotations)
 
     z = (x .- t)
     y = batched_transpose(R) ⊠ z
@@ -45,9 +45,9 @@ function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransform
         Δx = @thunk(R ⊠ Δy)
         Δt = @thunk(-sum(Δx, dims=2)) # t is in the same position as x, but negated and broadcasted
 
-        Δouter = Tangent{typeof(outer)}(; values=Δt)
-        Δinner = Tangent{typeof(inner)}(; linear=Tangent{typeof(inner.linear)}(; values=ΔR))
-        Δrigid = Tangent{typeof(rigid)}(; outer=Δouter, inner=Δinner)
+        Δtranslations = Tangent{typeof(translations)}(; values=Δt)
+        Δrotations = Tangent{typeof(rotations)}(; linear=Tangent{typeof(rotations.linear)}(; values=ΔR))
+        Δrigid = Tangent{typeof(rigid)}(; outer=Δtranslations, inner=Δrotations)
 
         return NoTangent(), Δrigid, Δx
     end

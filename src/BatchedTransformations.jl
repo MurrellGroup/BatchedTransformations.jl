@@ -13,10 +13,11 @@ export InverseTransformations, inverse
 
 include("compose.jl")
 export ComposedTransformations, compose
+export outer, inner
 
 include("affine.jl")
 export AbstractAffineMaps, LinearMaps, Translations, AffineMaps
-export linear, translation
+export translation, linear
 
 include("rotations.jl")
 export Rotations, RigidTransformations

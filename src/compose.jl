@@ -9,7 +9,7 @@ transformation to be applied first, and `outer` second.
 """
 struct ComposedTransformations{Outer<:Transformations,Inner<:Transformations} <: Transformations
     outer::Outer
-    Inner::Inner
+    inner::Inner
 end
 
 @inline compose(outer::Transformations, inner::Transformations) = ComposedTransformations(outer, inner)
