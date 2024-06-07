@@ -13,11 +13,10 @@ export ComposedTransformations, compose
 export outer, inner
 
 include("affine.jl")
-export AbstractAffineMaps, LinearMaps, Translations, AffineMaps
+export AbstractLinearMaps, LinearMaps, Rotations
+export Translations
+export AbstractAffineMaps, AffineMaps, RigidTransformations
 export translation, linear
-
-include("rotations.jl")
-export Rotations, RigidTransformations
 
 include("rand.jl")
 

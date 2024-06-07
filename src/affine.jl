@@ -26,6 +26,23 @@ end
 
 Base.inv(t::LinearMaps) = LinearMaps(mapslices(inv, values(t), dims=(1,2)))
 
+# Rotation
+# --------
+
+"""
+    Rotations{A<:AbstractArray} <: AbstractLinearMaps
+"""
+struct Rotations{A<:AbstractArray} <: AbstractLinearMaps
+    values::A
+end
+
+@inline Base.values(t::Rotations) = t.values
+
+Base.inv(t::Rotations{<:AbstractArray{<:Any,3}}) = Rotations(batched_transpose(values(t)))
+
+# would ideally be a lazy transpose, but NNlib.batched_transpose only allows for 1 batch dimension
+Base.inv(t::Rotations{<:AbstractArray{<:Any,N}}) where N = Rotations(permutedims(values(t), (2, 1, 3:N...)))
+
 # Translation
 # -----------
 
@@ -43,23 +60,6 @@ transform(t::Translations, x::AbstractArray) = x .+ values(t)
 inverse_transform(t::Translations, x::AbstractArray) = x .- values(t)
 
 Base.inv(t::Translations) = Translations(-values(t))
-
-# Rotation
-# --------
-
-"""
-    Rotations{A<:AbstractArray} <: AbstractLinearMaps
-"""
-struct Rotations{A<:AbstractArray} <: AbstractLinearMaps
-    values::A
-end
-
-@inline Base.values(t::Rotations) = t.values
-
-Base.inv(t::Rotations{<:AbstractArray{<:Any,3}}) = Rotations(batched_transpose(values(t)))
-
-# would ideally be a lazy transpose, but NNlib.batched_transpose only allows for 1 batch dimension
-Base.inv(t::Rotations{<:AbstractArray{<:Any,N}}) where N = Rotations(permutedims(values(t), (2, 1, 3:N...)))
 
 # Abstract Affine
 # ---------------
