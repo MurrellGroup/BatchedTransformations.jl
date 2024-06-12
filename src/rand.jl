@@ -11,12 +11,12 @@ function _rand_rotation(n::Integer, T::Type{<:Real})
 end
 
 function Base.rand(::Type{LinearMaps}, T::Type{<:Real}, m::Integer, n::Integer, batch_size::Dims)
-    values = randn(T, m, n, batch_size...)
+    values = rand(T, m, n, batch_size...)
     return LinearMaps(values)
 end
 
 function Base.rand(::Type{Translations}, T::Type{<:Real}, n::Integer, batch_size::Dims)
-    values = randn(T, n, 1, batch_size...)
+    values = rand(T, n, 1, batch_size...)
     return Translations(values)
 end
 

@@ -33,9 +33,10 @@ function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, 
 end
 
 function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransformations, x::AbstractArray)
-    t, R = values(translation(rigid)), values(linear(rigid))
-    z = inverse_transform(translation(rigid), x) # x .- t
-    y = inverse_transform(linear(rigid), z) # R' * (x .- t)
+    translations, rotations = translation(rigid), linear(rigid)
+    z = inverse_transform(translations, x) # x .- t
+    y = inverse_transform(rotations, z) # R' * (x .- t)
+    t, R = values(translations), values(rotations)
 
     function inverse_transform_pullback(_Δy)
         Δy = unthunk(_Δy)
