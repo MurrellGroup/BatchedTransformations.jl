@@ -12,7 +12,7 @@ abstract type Transformations end
     t * x
     t(x)
 """
-transform(t::Transformations, ::Any) = error("transform not defined for $(typeof(t))")
+transform(t::Transformations, ::Any) = error("transform not defined for $(typeof(t)) and $(typeof(x))")
 
 Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t))")
 inverse_transform(t::Transformations, x) = transform(inv(t), x)
