@@ -2,7 +2,6 @@ using BatchedTransformations
 using Test
 
 using BatchedTransformations: ⊠
-
 using ChainRulesTestUtils: test_rrule
 
 # TODO: test other array types (e.g. CuArray)
@@ -13,17 +12,6 @@ using ChainRulesTestUtils: test_rrule
     include("ext/ChainRulesCoreExt.jl")
     include("ext/FunctorsExt.jl")
 
-    @testset "batched_utils.jl" begin
-        r = rand(   Float32, 2, 3, 4, 5)
-        z = rand(ComplexF32, 2, 3, 4, 5)
-
-        #=@testset "batched_transpose" begin
-            @test BatchedTransformations.batched_transpose(r) == permutedims(r, (2, 1, 3, 4))
-            @test BatchedTransformations.batched_transpose(z) == permutedims(z, (2, 1, 3, 4))
-        end=#
-
-    end
-
     @testset "transformations.jl" begin
         struct FooTransformations{A<:AbstractArray} <: Transformations; values::A end
         t = FooTransformations(rand(Float64, ()))
@@ -31,7 +19,7 @@ using ChainRulesTestUtils: test_rrule
         @test_throws ErrorException transform(t, x)
         @test_throws ErrorException inv(t)
         @test_throws ErrorException inverse_transform(t, x)
-        @test_throws ErrorException t ∘ x
+        @test_throws ErrorException t * x
         @test_throws ErrorException t(x)
 
         io = IOBuffer()
@@ -48,7 +36,7 @@ using ChainRulesTestUtils: test_rrule
 
         l = rand(LinearMaps, Float32, m, n, batch_size)
         @test inverse(inverse(l)) === l
-        @test inverse(l) ∘ x == inv(l) ∘ x
+        @test inverse(l) * x == inv(l) * x
     end
 
     @testset "compose.jl" begin
@@ -60,9 +48,9 @@ using ChainRulesTestUtils: test_rrule
         l = rand(LinearMaps, Float32, m, n, batch_size)
         c = compose(t, l)
         @test t ∘ l == c
-        @test t(l) == c
-        @test c ∘ x == t ∘ (l ∘ x)
-        @test inv(c) ∘ x == inv(l) ∘ (inv(t) ∘ x)
+        #@test c(x) == t(l)(x)
+        @test c * x == t(l(x))
+        @test inv(c)(x) ≈ inv(l) * (inv(t) * x)
     end
 
     @testset "affine.jl" begin
@@ -74,32 +62,29 @@ using ChainRulesTestUtils: test_rrule
             l = rand(LinearMaps, Float32, m, n, batch_size)
             @test linear(l) isa LinearMaps
             @test values(l) isa AbstractArray
-            @test l ∘ x == values(l) ⊠ x
-            @test (inv(l) ∘ l) ∘ x ≈ x
-            @test inv(l) ∘ (l ∘ x) ≈ x
+            @test l * x == values(l) ⊠ x
+            @test (inv(l) * l) * x ≈ x
+            @test inv(l) * (l * x) ≈ x
         end
 
         @testset "Translations" begin
             t = rand(Translations, Float32, n, batch_size)
             @test translation(t) isa Translations
             @test values(t) isa AbstractArray
-            @test t ∘ x == x .+ values(t)
-            @test (inv(t) ∘ t) ∘ x ≈ x
-            @test inv(t) ∘ (t ∘ x) ≈ x
+            @test t * x == x .+ values(t)
+            @test (inv(t) * t) * x ≈ x
+            @test inv(t) * (t * x) ≈ x
         end
 
         @testset "AffineMaps" begin
             affine = rand(AffineMaps, Float32, m, n, batch_size)
             @test linear(affine) isa LinearMaps
             @test translation(affine) isa Translations
-            @test affine ∘ x == values(linear(affine)) ⊠ x .+ values(translation(affine))
-            @test (inv(affine) ∘ affine) ∘ x ≈ x
-            @test inv(affine) ∘ (affine ∘ x) ≈ x
+            @test affine * x == values(linear(affine)) ⊠ x .+ values(translation(affine))
+            @test (inv(affine) * affine) * x ≈ x
+            @test inv(affine) * (affine * x) ≈ x
         end
 
-    end
-
-    @testset "rigid.jl" begin
         n = 3
         batch_size = (2, 4)
         x = rand(Float32, n, 5, batch_size...)
@@ -108,9 +93,9 @@ using ChainRulesTestUtils: test_rrule
             rotation = rand(Rotations, Float32, n, batch_size)
             @test linear(rotation) isa Rotations
             @test values(rotation) isa AbstractArray
-            @test rotation ∘ x == values(linear(rotation)) ⊠ x
-            @test (inv(rotation) ∘ rotation) ∘ x ≈ x
-            @test inv(rotation) ∘ (rotation ∘ x) ≈ x
+            @test rotation * x == values(linear(rotation)) ⊠ x
+            @test (inv(rotation) * rotation) * x ≈ x
+            @test inv(rotation) * (rotation * x) ≈ x
 
             # NNlib.batched_transpose only supports one batch dimension
             @test !isa(values(inv(rand(Rotations, Float32, n, (2,)))), Array)
@@ -121,10 +106,10 @@ using ChainRulesTestUtils: test_rrule
             rigid = rand(RigidTransformations, Float32, n, batch_size)
             @test linear(rigid) isa Rotations
             @test translation(rigid) isa Translations
-            @test rigid ∘ x == values(linear(rigid)) ⊠ x .+ values(translation(rigid))
-            @test (inv(rigid) ∘ rigid) ∘ x ≈ x
-            @test inv(rigid) ∘ (rigid ∘ x) ≈ x
-
+            @test rigid * x == values(linear(rigid)) ⊠ x .+ values(translation(rigid))
+            @test (inv(rigid) * rigid) * x ≈ x
+            @test inv(rigid) * (rigid * x) ≈ x
+            @test rigid * rigid isa RigidTransformations
         end
 
     end

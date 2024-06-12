@@ -15,12 +15,10 @@ end
 """
     compose(t2, t1)
     t2 ∘ t1
-    t2(t1)
 """
 @inline compose(outer::Transformations, inner::Transformations) = ComposedTransformations(outer, inner)
 
 @inline Base.:(∘)(outer::Transformations, inner::Transformations) = compose(outer, inner)
-@inline (outer::Transformations)(inner::Transformations) = compose(outer, inner)
 
 @inline outer(composed::ComposedTransformations) = composed.outer
 @inline inner(composed::ComposedTransformations) = composed.inner
@@ -29,3 +27,6 @@ transform(t::ComposedTransformations, x::AbstractArray) = transform(outer(t), tr
 inverse_transform(t::ComposedTransformations, x::AbstractArray) = inverse_transform(inner(t), inverse_transform(outer(t), x))
 
 Base.inv(t::ComposedTransformations) = compose(inv(inner(t)), inv(outer(t)))
+
+# t2, t1 = compose(t2, t1)
+Base.iterate(t::ComposedTransformations, state=1) = state == 1 ? (t.outer, 2) : (state == 2 ? (t.inner, nothing) : nothing)

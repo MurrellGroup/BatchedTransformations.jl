@@ -12,6 +12,8 @@ abstract type AbstractLinearMaps <: Transformations end
 
 transform(t::AbstractLinearMaps, x::AbstractArray) = values(t) ⊠ x
 
+transform(l2::AbstractLinearMaps, l1::AbstractLinearMaps) = LinearMaps(l2(values(l1)))
+
 # Linear
 # ------
 
@@ -43,6 +45,8 @@ Base.inv(t::Rotations{<:AbstractArray{<:Any,3}}) = Rotations(batched_transpose(v
 # would ideally be a lazy transpose, but NNlib.batched_transpose only allows for 1 batch dimension
 Base.inv(t::Rotations{<:AbstractArray{<:Any,N}}) where N = Rotations(permutedims(values(t), (2, 1, 3:N...)))
 
+transform(r2::Rotations, r1::Rotations) = Rotations(r2(values(r1)))
+
 # Translation
 # -----------
 
@@ -61,6 +65,8 @@ inverse_transform(t::Translations, x::AbstractArray) = x .- values(t)
 
 Base.inv(t::Translations) = Translations(-values(t))
 
+transform(t2::Translations, t1::Translations) = Translations(transform(t2, values(t1)))
+
 # Abstract Affine
 # ---------------
 
@@ -68,6 +74,23 @@ const AbstractAffineMaps = ComposedTransformations{T,L} where {T<:Translations,L
 
 @inline translation(t::AbstractAffineMaps) = outer(t)
 @inline linear(t::AbstractAffineMaps) = inner(t)
+
+# the following could be simplified with an IdentityTransformations type,
+# that gets returned when we call e.g. linear(::Translations) or translation(::AbstractLinearMaps)
+# but then this argument splatting might not work
+
+transform(t2::Translations, l1::AbstractLinearMaps) = t2 ∘ l1
+transform(l2::AbstractLinearMaps, t1::Translations) = Translations(l2(values(t1))) ∘ l2
+
+transform(t2::Translations, (t1, l1)::AbstractAffineMaps) = t2(t1) ∘ l1
+transform((t2, l2)::AbstractAffineMaps, t1::Translations) = Translations(t2(l2(values(t1)))) ∘ l2
+
+transform(l2::AbstractLinearMaps, (t1, l1)::AbstractAffineMaps) = l2(t1) ∘ l2(l1)
+transform((t2, l2)::AbstractAffineMaps, l1::AbstractLinearMaps) = t2 ∘ l2(l1)
+
+transform((t2, l2)::AbstractAffineMaps, (t1, l1)::AbstractAffineMaps) = Translations(t2(l2(values(t1)))) ∘ l2(l1)
+
+Base.inv(t::AbstractAffineMaps) = transform(inv(inner(t)), inv(outer(t)))
 
 # Affine
 # ------
@@ -77,7 +100,7 @@ const AffineMaps = AbstractAffineMaps{<:Translations,<:AbstractLinearMaps}
 """
     AffineMaps(translations::Translations, linear::AbstractLinearMaps)
 """
-AffineMaps(translations::Translations, linear::AbstractLinearMaps) = ComposedTransformations(translations, linear)
+(::Type{AffineMaps})(translations::Translations, linear::AbstractLinearMaps) = ComposedTransformations(translations, linear)
 
 # Rigid
 # -----
@@ -87,4 +110,4 @@ const RigidTransformations = AbstractAffineMaps{<:Translations,<:Rotations}
 """
     RigidTransformations(translations::Translations, rotations::Rotations)
 """
-RigidTransformations(translations::Translations, rotations::Rotations) = ComposedTransformations(translations, rotations)
+(::Type{RigidTransformations})(translations::Translations, rotations::Rotations) = ComposedTransformations(translations, rotations)

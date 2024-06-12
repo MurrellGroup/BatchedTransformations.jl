@@ -15,6 +15,6 @@ end
 @inline inverse(t::Transformations) = InverseTransformations(t)
 @inline inverse(t::InverseTransformations) = t.t
 
-transform(t::InverseTransformations, x::AbstractArray) = inverse_transform(t.t, x)
+transform(t::InverseTransformations, x) = inverse_transform(t.t, x)
 
 Base.inv(t::InverseTransformations) = t.t
