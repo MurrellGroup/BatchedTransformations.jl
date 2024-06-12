@@ -1,7 +1,7 @@
 """
     InverseTransformations{T<:Transformations}
 
-A `InverseTransformations` represents a *lazy* inverse of a `Transformations` t.
+An `InverseTransformations` represents a *lazy* inverse of a `Transformations` t.
 
 `inverse(t)` is a lazy inverse that defaults to `inv(t)` when evaluated.
 `transform(inverse(t), x)` is equivalent to `inverse_transform(t, x)`.

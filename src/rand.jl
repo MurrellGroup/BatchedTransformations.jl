@@ -39,4 +39,4 @@ function Base.rand(::Type{RigidTransformations}, T::Type{<:Real}, n::Integer, ba
     return RigidTransformations(translations, rotations)
 end
 
-Base.rand(::Type{<:Transformations}, n::Integer, batch_size::Dims) = rand(RigidTransformations, Float64, n, batch_size)
+Base.rand(T::Type{<:Transformations}, args...) = rand(T, Float32, args...)

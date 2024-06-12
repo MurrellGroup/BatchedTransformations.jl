@@ -1,6 +1,6 @@
 module ChainRulesCoreExt
 
-# maybe move this module to src since ChainRulesCore is lite, and gets loaded by NNlib anyway.
+# maybe move this module to src since ChainRulesCore is light, and gets loaded by NNlib anyway.
 # still nice to keep it distinct from the core package though.
 
 using BatchedTransformations
@@ -8,6 +8,7 @@ using ChainRulesCore
 
 using BatchedTransformations: batched_mul, batched_mul_T1, batched_mul_T2
 
+# might also work with arbitrary affine maps
 function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, x::AbstractArray)
     translations, rotations = outer(rigid), linear(rigid)
     t, R = values(translations), values(rotations)
@@ -32,11 +33,9 @@ function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, 
 end
 
 function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransformations, x::AbstractArray)
-    translations, rotations = translation(rigid), linear(rigid)
-    t, R = values(translations), values(rotations)
-
-    z = (x .- t)
-    y = batched_mul_T1(R, z)
+    t, R = values(translation(rigid)), values(linear(rigid))
+    z = inverse_transform(translation(rigid), x) # x .- t
+    y = inverse_transform(linear(rigid), z) # R' * (x .- t)
 
     function inverse_transform_pullback(_Δy)
         Δy = unthunk(_Δy)

@@ -8,9 +8,10 @@ export AbstractLinearMaps
 """
 abstract type AbstractLinearMaps <: Transformations end
 
-@inline linear(t::AbstractLinearMaps) = t
+@inline linear(l::AbstractLinearMaps) = l
 
-transform(t::AbstractLinearMaps, x::AbstractArray) = values(t) ⊠ x
+# would be nice to support `x` as matrix that gets broadcasted, but it gets really messy
+transform(l::AbstractLinearMaps, x::AbstractArray) = values(l) ⊠ x
 
 transform(l2::AbstractLinearMaps, l1::AbstractLinearMaps) = LinearMaps(l2(values(l1)))
 
@@ -19,6 +20,9 @@ transform(l2::AbstractLinearMaps, l1::AbstractLinearMaps) = LinearMaps(l2(values
 
 """
     LinearMaps{A<:AbstractArray} <: AbstractLinearMaps
+
+Contains a batch of linear maps mapping from n-dimensional to to m-dimensional space,
+represented by an array of size `(m, n, b1, b2, ...)`.
 """
 struct LinearMaps{A<:AbstractArray} <: AbstractLinearMaps
     values::A
@@ -33,6 +37,9 @@ Base.inv(t::LinearMaps) = LinearMaps(mapslices(inv, values(t), dims=(1,2)))
 
 """
     Rotations{A<:AbstractArray} <: AbstractLinearMaps
+
+Contains a batch of n-dimensional rotations matrices,
+represented by an array of size `(n, n, b1, b2, ...)`.
 """
 struct Rotations{A<:AbstractArray} <: AbstractLinearMaps
     values::A
@@ -52,6 +59,9 @@ transform(r2::Rotations, r1::Rotations) = Rotations(r2(values(r1)))
 
 """
     Translations{A<:AbstractArray} <: Transformations
+
+Contains a batch of n-dimensional translation vectors,
+represented by an array of size `(n, 1, b1, b2, ...)`.
 """
 struct Translations{A<:AbstractArray} <: Transformations
     values::A

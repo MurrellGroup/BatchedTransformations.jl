@@ -18,6 +18,11 @@ function batched_mul_T2(x::AbstractArray{T1,N}, y::AbstractArray{T2,N}) where {T
     return reshape(z, size(z, 1), size(z, 2), batch_size...)
 end
 
+# might need custom chain rule
+# could do map(det, eachslice(data, dims=size(data)[3:end], drop=false))
+batched_det(data::AbstractArray{<:Real}) = mapslices(det, data, dims=(1,2))
+
+#=
 # doesn't work with batched_mul on GPU
 function _batched_transpose(data::A) where {T,N,A<:AbstractArray{T,N}}
     perm = (2,1,3:N...)
@@ -26,7 +31,6 @@ end
 
 _batched_adjoint(data::AbstractArray{<:Real}) = _batched_transpose(data)
 
-#=
 # FIXME: this rrule breaks when PermutedDimsArray is used, but not when permutedims is used
 # also see https://github.com/JuliaDiff/ChainRules.jl/blob/main/src/rulesets/LinearAlgebra/structured.jl#L187
 # TODO: see if ProjectTo(x)(Δy) is necessary
@@ -38,7 +42,3 @@ function ChainRulesCore.rrule(::typeof(batched_transpose), x::AbstractArray)
     batched_transpose(x), batched_transpose_pullback
 end
 =#
-
-# might need custom chain rule
-# could do map(det, eachslice(data, dims=size(data)[3:end], drop=false))
-batched_det(data::AbstractArray{<:Real}) = mapslices(det, data, dims=(1,2))

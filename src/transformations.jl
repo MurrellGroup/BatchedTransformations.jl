@@ -3,7 +3,7 @@
 
 An abstract type whose concrete subtypes contain batches of transformations
 that can be applied to an array. A `Transformations` `t` can be applied to
-`x` with `transform(t, x)`, `t * x`, andt(x).
+`x` with `transform(t, x)`, `t * x`, and t(x).
 """
 abstract type Transformations end
 
@@ -12,7 +12,7 @@ abstract type Transformations end
     t * x
     t(x)
 """
-transform(t::Transformations, ::Any) = error("transform not defined for $(typeof(t)) and $(typeof(x))")
+transform(t::Transformations, x::Any) = error("transform not defined for $(typeof(t)) and $(typeof(x))")
 
 Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t))")
 inverse_transform(t::Transformations, x) = transform(inv(t), x)
