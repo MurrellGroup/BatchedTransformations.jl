@@ -8,10 +8,9 @@ using ChainRulesCore
 
 using BatchedTransformations: batched_mul, batched_mul_T1, batched_mul_T2
 
-# might also work with arbitrary affine maps
-function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, x::AbstractArray)
-    translations, rotations = outer(rigid), linear(rigid)
-    t, R = values(translations), values(rotations)
+function ChainRulesCore.rrule(::typeof(transform), affine_maps::AbstractAffineMaps, x::AbstractArray)
+    translations, linear_maps = outer(affine_maps), linear(affine_maps)
+    t, R = values(translations), values(linear_maps)
 
     y = batched_mul(R, x) .+ t
 
@@ -23,10 +22,10 @@ function ChainRulesCore.rrule(::typeof(transform), rigid::RigidTransformations, 
         Δx = @thunk(batched_mul_T1(R, Δy))
 
         Δtranslations = Tangent{typeof(translations)}(; values=Δt)
-        Δrotations = Tangent{typeof(rotations)}(; values=ΔR)
-        Δrigid = Tangent{typeof(rigid)}(; outer=Δtranslations, inner=Δrotations)
+        Δlinear_maps = Tangent{typeof(linear_maps)}(; values=ΔR)
+        Δaffine_maps = Tangent{typeof(affine_maps)}(; outer=Δtranslations, inner=Δlinear_maps)
 
-        return NoTangent(), Δrigid, Δx
+        return NoTangent(), Δaffine_maps, Δx
     end
 
     return y, transform_pullback

@@ -34,7 +34,7 @@ using ChainRulesTestUtils: test_rrule
         batch_size = (2, 4)
         x = rand(Float32, n, 2, batch_size...)
 
-        l = rand(LinearMaps, Float32, m, n, batch_size)
+        l = rand(Float32, LinearMaps, n => m, batch_size)
         @test inverse(inverse(l)) === l
         @test inverse(l) * x == inv(l) * x
     end
@@ -44,8 +44,8 @@ using ChainRulesTestUtils: test_rrule
         batch_size = (2, 4)
         x = rand(Float32, n, 5, batch_size...)
 
-        t = rand(Translations, Float32, m, batch_size)
-        l = rand(LinearMaps, Float32, m, n, batch_size)
+        t = rand(Float32, Translations, m, batch_size)
+        l = rand(Float32, LinearMaps, n => m, batch_size)
         c = compose(t, l)
         @test t ∘ l == c
         #@test c(x) == t(l)(x)
@@ -59,8 +59,9 @@ using ChainRulesTestUtils: test_rrule
         x = rand(Float32, n, 5, batch_size...)
 
         @testset "LinearMaps" begin
-            l = rand(LinearMaps, Float32, m, n, batch_size)
+            l = rand(Float32, LinearMaps, n => m, batch_size)
             @test linear(l) isa LinearMaps
+            @test translation(l) isa Identity
             @test values(l) isa AbstractArray
             @test l * x == values(l) ⊠ x
             @test (inv(l) * l) * x ≈ x
@@ -68,7 +69,8 @@ using ChainRulesTestUtils: test_rrule
         end
 
         @testset "Translations" begin
-            t = rand(Translations, Float32, n, batch_size)
+            t = rand(Float32, Translations, n, batch_size)
+            @test linear(t) isa Identity
             @test translation(t) isa Translations
             @test values(t) isa AbstractArray
             @test t * x == x .+ values(t)
@@ -77,7 +79,7 @@ using ChainRulesTestUtils: test_rrule
         end
 
         @testset "AffineMaps" begin
-            affine = rand(AffineMaps, Float32, m, n, batch_size)
+            affine = rand(Float32, AffineMaps, n => m, batch_size)
             @test linear(affine) isa LinearMaps
             @test translation(affine) isa Translations
             @test affine * x == values(linear(affine)) ⊠ x .+ values(translation(affine))
@@ -90,20 +92,21 @@ using ChainRulesTestUtils: test_rrule
         x = rand(Float32, n, 5, batch_size...)
 
         @testset "Rotations" begin
-            rotation = rand(Rotations, Float32, n, batch_size)
+            rotation = rand(Float32, Rotations, n, batch_size)
             @test linear(rotation) isa Rotations
+            @test translation(rotation) isa Identity
             @test values(rotation) isa AbstractArray
             @test rotation * x == values(linear(rotation)) ⊠ x
             @test (inv(rotation) * rotation) * x ≈ x
             @test inv(rotation) * (rotation * x) ≈ x
 
             # NNlib.batched_transpose only supports one batch dimension
-            @test !isa(values(inv(rand(Rotations, Float32, n, (2,)))), Array)
-            @test isa(values(inv(rand(Rotations, Float32, n, (2,1)))), Array)
+            @test !isa(values(inv(rand(Float32, Rotations, n, (2,)))), Array)
+            @test isa(values(inv(rand(Float32, Rotations, n, (2,1)))), Array)
         end
 
         @testset "RigidTransformations" begin
-            rigid = rand(RigidTransformations, Float32, n, batch_size)
+            rigid = rand(Float32, RigidTransformations, n, batch_size)
             @test linear(rigid) isa Rotations
             @test translation(rigid) isa Translations
             @test rigid * x == values(linear(rigid)) ⊠ x .+ values(translation(rigid))
@@ -117,7 +120,7 @@ using ChainRulesTestUtils: test_rrule
     @testset "rand.jl" begin
 
         @testset "Rotations" begin
-            rotations = rand(Rotations, Float32, 3, (2, 4))
+            rotations = rand(Float32, Rotations, 3, (2, 4))
             @test BatchedTransformations.batched_det(values(rotations)) ≈ ones(Float32, 1, 1, 2, 4)
         end
 

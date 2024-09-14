@@ -3,8 +3,8 @@ module FunctorsExt
 using BatchedTransformations
 using Functors: @functor
 
-@functor InverseTransformations
-@functor ComposedTransformations
+@functor Inverse
+@functor Composed
 @functor LinearMaps
 @functor Rotations
 @functor Translations

@@ -1,18 +1,19 @@
 module BatchedTransformations
 
-include("batched_utils.jl")
-
 include("transformations.jl")
 export Transformations, transform, inverse_transform
 
+include("identity.jl")
+export Identity
+
 include("inverse.jl")
-export InverseTransformations, inverse
+export Inverse, inverse
 
 include("compose.jl")
-export ComposedTransformations, compose
+export Composed, compose
 export outer, inner
 
-include("affine.jl")
+include("affine/affine.jl")
 export AbstractLinearMaps, LinearMaps, Rotations
 export Translations
 export AbstractAffineMaps, AffineMaps, RigidTransformations

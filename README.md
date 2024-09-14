@@ -5,3 +5,6 @@
 [![Coverage](https://codecov.io/gh/MurrellGroup/BatchedTransformations.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/MurrellGroup/BatchedTransformations.jl)
 
 This Julia package provides an interface for applying transformations to data in batches, leveraging [NNlib.jl](https://github.com/FluxML/NNlib.jl) and [Functors.jl](https://github.com/FluxML/Functors.jl) to be GPU-friendly. Lazy inverse and composition types enable optimization through custom chain rules.
+
+## See also
+- [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl)
