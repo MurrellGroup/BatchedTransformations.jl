@@ -12,9 +12,9 @@ struct Inverse{T<:Transformations} <: Transformations
     t::T
 end
 
-inverse(t::Transformations) = Inverse(t)
-inverse(t::Inverse) = t.t
+@inline inverse(t::Transformations) = Inverse(t)
+@inline inverse(t::Inverse) = t.t
 
-transform(t::Inverse, x) = inverse_transform(t.t, x)
+@inline transform(t::Inverse, x) = inverse_transform(t.t, x)
 
-Base.inv(t::Inverse) = t.t
+@inline Base.inv(t::Inverse) = t.t

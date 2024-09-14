@@ -3,9 +3,6 @@ module BatchedTransformations
 include("transformations.jl")
 export Transformations, transform, inverse_transform
 
-include("identity.jl")
-export Identity
-
 include("inverse.jl")
 export Inverse, inverse
 

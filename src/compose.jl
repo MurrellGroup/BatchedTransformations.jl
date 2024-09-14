@@ -14,9 +14,9 @@ end
     compose(t2, t1)
     t2 ∘ t1
 """
-compose(outer::Transformations, inner::Transformations) = Composed(outer, inner)
+@inline compose(outer::Transformations, inner::Transformations) = Composed(outer, inner)
 
-Base.:(∘)(outer::Transformations, inner::Transformations) = compose(outer, inner)
+@inline Base.:(∘)(outer::Transformations, inner::Transformations) = compose(outer, inner)
 
 outer(composed::Composed) = composed.outer
 inner(composed::Composed) = composed.inner

@@ -61,20 +61,18 @@ using ChainRulesTestUtils: test_rrule
         @testset "LinearMaps" begin
             l = rand(Float32, LinearMaps, n => m, batch_size)
             @test linear(l) isa LinearMaps
-            @test translation(l) isa Identity
             @test values(l) isa AbstractArray
             @test l * x == values(l) ⊠ x
-            @test (inv(l) * l) * x ≈ x
+            @test (inv(l) ∘ l) * x ≈ x
             @test inv(l) * (l * x) ≈ x
         end
 
         @testset "Translations" begin
             t = rand(Float32, Translations, n, batch_size)
-            @test linear(t) isa Identity
             @test translation(t) isa Translations
             @test values(t) isa AbstractArray
             @test t * x == x .+ values(t)
-            @test (inv(t) * t) * x ≈ x
+            @test (inv(t) ∘ t) * x ≈ x
             @test inv(t) * (t * x) ≈ x
         end
 
@@ -83,7 +81,7 @@ using ChainRulesTestUtils: test_rrule
             @test linear(affine) isa LinearMaps
             @test translation(affine) isa Translations
             @test affine * x == values(linear(affine)) ⊠ x .+ values(translation(affine))
-            @test (inv(affine) * affine) * x ≈ x
+            @test (inv(affine) ∘ affine) * x ≈ x
             @test inv(affine) * (affine * x) ≈ x
         end
 
@@ -94,10 +92,9 @@ using ChainRulesTestUtils: test_rrule
         @testset "Rotations" begin
             rotation = rand(Float32, Rotations, n, batch_size)
             @test linear(rotation) isa Rotations
-            @test translation(rotation) isa Identity
             @test values(rotation) isa AbstractArray
             @test rotation * x == values(linear(rotation)) ⊠ x
-            @test (inv(rotation) * rotation) * x ≈ x
+            @test (inv(rotation) ∘ rotation) * x ≈ x
             @test inv(rotation) * (rotation * x) ≈ x
 
             # NNlib.batched_transpose only supports one batch dimension
@@ -110,9 +107,9 @@ using ChainRulesTestUtils: test_rrule
             @test linear(rigid) isa Rotations
             @test translation(rigid) isa Translations
             @test rigid * x == values(linear(rigid)) ⊠ x .+ values(translation(rigid))
-            @test (inv(rigid) * rigid) * x ≈ x
+            @test (inv(rigid) ∘ rigid) * x ≈ x
             @test inv(rigid) * (rigid * x) ≈ x
-            @test rigid * rigid isa RigidTransformations
+            @test rigid ∘ rigid isa RigidTransformations
         end
 
     end

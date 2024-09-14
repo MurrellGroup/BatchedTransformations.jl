@@ -14,12 +14,11 @@ abstract type Transformations end
 """
 transform(t::Transformations, x) = error("transform not defined for $(typeof(t)) and $(typeof(x))")
 
-Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t))")
-inverse_transform(t::Transformations, x) = transform(inv(t), x)
+Base.inv(t::Transformations) = error("inverse not defined for $(typeof(t)) ")
+@inline inverse_transform(t::Transformations, x) = transform(inv(t), x)
 
-Base.:(*)(t::Transformations, x) = transform(t, x)
-(t::Transformations)(x) = transform(t, x)
+@inline Base.:(*)(t::Transformations, x) = transform(t, x)
+@inline (t::Transformations)(x) = transform(t, x)
 
-function Base.show(io::IO, ::MIME"text/plain", t::Transformations)
-    print(io, summary(t))
-end
+Base.show(io::IO, ::MIME"text/plain", t::Transformations) = print(io, summary(t))
+

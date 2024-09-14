@@ -6,12 +6,10 @@ abstract type AbstractLinearMaps <: Transformations end
 Base.values(t::AbstractLinearMaps) = t.values
 
 linear(l::AbstractLinearMaps) = l
-translation(::AbstractLinearMaps) = Identity{Translations}()
 
 transform(l::AbstractLinearMaps, x::AbstractArray) = values(l) ⊠ x
 
-transform(l2::AbstractLinearMaps, l1::AbstractLinearMaps) = LinearMaps(l2(values(l1)))
-
+@inline compose(l2::AbstractLinearMaps, l1::AbstractLinearMaps) = LinearMaps(l2 * values(l1))
 
 """
     LinearMaps{A<:AbstractArray} <: AbstractLinearMaps
@@ -41,4 +39,4 @@ Base.inv(t::Rotations{<:AbstractArray{<:Any,N}}) where N = Rotations(permutedims
 
 inverse_transform(r::Rotations, x::AbstractArray) = batched_mul_T1(values(r), x)
 
-transform(r2::Rotations, r1::Rotations) = Rotations(r2(values(r1)))
+@inline compose(l2::Rotations, l1::Rotations) = Rotations(l2 * values(l1))
