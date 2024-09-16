@@ -5,8 +5,9 @@ using Functors: @functor
 
 @functor Inverse
 @functor Composed
-@functor LinearMaps
-@functor Rotations
-@functor Translations
+@functor Linear
+@functor Translation
+@functor Affine
+@functor Rotation
 
 end

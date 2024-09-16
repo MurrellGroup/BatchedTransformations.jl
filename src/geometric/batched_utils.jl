@@ -1,5 +1,3 @@
-using NNlib: ⊠, batched_mul, batched_transpose
-
 function batched_mul_T1(x::AbstractArray{T1,N}, y::AbstractArray{T2,N}) where {T1,T2,N}
     batch_size = size(x)[3:end]
     @assert batch_size == size(y)[3:end] "batch size has to be the same for the two arrays."

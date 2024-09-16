@@ -8,9 +8,9 @@ using ChainRulesCore
 
 using BatchedTransformations: batched_mul, batched_mul_T1, batched_mul_T2
 
-function ChainRulesCore.rrule(::typeof(transform), affine_maps::AbstractAffineMaps, x::AbstractArray)
-    translations, linear_maps = outer(affine_maps), linear(affine_maps)
-    t, R = values(translations), values(linear_maps)
+function ChainRulesCore.rrule(::typeof(transform), affine::Affine, x::AbstractArray)
+    translation, linear = affine.composed.outer, affine.composed.inner
+    t, R = values(translation), values(linear)
 
     y = batched_mul(R, x) .+ t
 
@@ -21,21 +21,22 @@ function ChainRulesCore.rrule(::typeof(transform), affine_maps::AbstractAffineMa
         Δt = @thunk(sum(Δy, dims=2))
         Δx = @thunk(batched_mul_T1(R, Δy))
 
-        Δtranslations = Tangent{typeof(translations)}(; values=Δt)
-        Δlinear_maps = Tangent{typeof(linear_maps)}(; values=ΔR)
-        Δaffine_maps = Tangent{typeof(affine_maps)}(; outer=Δtranslations, inner=Δlinear_maps)
+        Δtranslation = Tangent{typeof(translation)}(; values=Δt)
+        Δlinear = Tangent{typeof(linear)}(; values=ΔR)
+        Δcomposed = Tangent{typeof(affine.composed)}(; outer=Δtranslation, inner=Δlinear)
+        Δaffine = Tangent{typeof(affine)}(; composed=Δcomposed)
 
-        return NoTangent(), Δaffine_maps, Δx
+        return NoTangent(), Δaffine, Δx
     end
 
     return y, transform_pullback
 end
 
-function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransformations, x::AbstractArray)
-    translations, rotations = translation(rigid), linear(rigid)
-    z = inverse_transform(translations, x) # x .- t
-    y = inverse_transform(rotations, z) # R' * (x .- t)
-    t, R = values(translations), values(rotations)
+function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::Rigid, x::AbstractArray)
+    translation, rotation = rigid.composed.outer, rigid.composed.inner
+    z = inverse_transform(translation, x) # x .- t
+    y = inverse_transform(rotation, z) # R' * (x .- t)
+    t, R = values(translation), values(rotation)
 
     function inverse_transform_pullback(_Δy)
         Δy = unthunk(_Δy)
@@ -44,9 +45,10 @@ function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::RigidTransform
         Δx = @thunk(batched_mul(R, Δy))
         Δt = @thunk(-sum(Δx, dims=2)) # t is in the same position as x, but negated and broadcasted
 
-        Δtranslations = Tangent{typeof(translations)}(; values=Δt)
-        Δrotations = Tangent{typeof(rotations)}(;  values=ΔR)
-        Δrigid = Tangent{typeof(rigid)}(; outer=Δtranslations, inner=Δrotations)
+        Δtranslation = Tangent{typeof(translation)}(; values=Δt)
+        Δrotation = Tangent{typeof(rotation)}(;  values=ΔR)
+        Δcomposed = Tangent{typeof(rigid.composed)}(; outer=Δtranslation, inner=Δrotation)
+        Δrigid = Tangent{typeof(rigid)}(; composed=Δcomposed)
 
         return NoTangent(), Δrigid, Δx
     end
