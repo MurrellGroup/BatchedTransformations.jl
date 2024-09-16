@@ -13,9 +13,9 @@ using ChainRulesTestUtils: test_rrule
     include("ext/FunctorsExt.jl")
 
     @testset "transformations.jl" begin
-        struct FooTransformation{A<:AbstractArray} <: Transformation; values::A end
-        t = FooTransformation(rand(Float64, ()))
-        x = rand(3, 2, 4)
+        struct FooTransformation <: Transformation end
+        t = FooTransformation()
+        x = "Bar"
         @test_throws ErrorException transform(t, x)
         @test_throws ErrorException inv(t)
         @test_throws ErrorException inverse_transform(t, x)
@@ -25,7 +25,7 @@ using ChainRulesTestUtils: test_rrule
         io = IOBuffer()
         show(io, MIME("text/plain"), t)
         str = String(take!(io))
-        @test str == "FooTransformation{Array{Float64, 0}}"
+        @test str == "FooTransformation"
 
     end
 

@@ -9,7 +9,7 @@ abstract type AbstractAffine <: GeometricTransformation end
 function translation end
 function linear end
 
-Base.iterate(affine::AbstractAffine, state=0) = state == 0 ? (translation(affine), 1) : (state == 1 ? (linear(affine), nothing) : nothing)
+Base.iterate(affine::AbstractAffine, args...) = iterate(affine.composed, args...)
 
 abstract type AbstractLinear <: AbstractAffine end
 

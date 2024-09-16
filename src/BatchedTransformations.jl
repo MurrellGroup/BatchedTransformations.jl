@@ -1,18 +1,12 @@
 module BatchedTransformations
 
-include("transformations.jl")
+include("core.jl")
 export Transformation, transform, inverse_transform
 export batchsize
-
-include("identity.jl")
 export Identity
-
-include("inverse.jl")
-export Inverse, inverse
-
-include("compose.jl")
 export Composed, compose
 export outer, inner
+export Inverse, inverse
 
 include("geometric/geometric.jl")
 export GeometricTransformation, AbstractAffine, AbstractLinear
