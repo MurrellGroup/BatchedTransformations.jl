@@ -9,7 +9,7 @@ using ChainRulesCore
 using BatchedTransformations: batched_mul, batched_mul_T1, batched_mul_T2
 
 function ChainRulesCore.rrule(::typeof(transform), affine::Affine, x::AbstractArray)
-    translation, linear = affine
+    translation, linear = affine.composed.outer, affine.composed.inner
     t, R = values(translation), values(linear)
 
     y = batched_mul(R, x) .+ t
@@ -34,7 +34,7 @@ end
 
 # can probably relax Orthonormal{1} to Orthonormal
 function ChainRulesCore.rrule(::typeof(inverse_transform), rigid::Rigid, x::AbstractArray)
-    translation, rotation = rigid
+    translation, rotation = rigid.composed.outer, rigid.composed.inner
     z = inverse_transform(translation, x) # x .- t
     y = inverse_transform(rotation, z) # R' * (x .- t)
     t, R = values(translation), values(rotation)
