@@ -8,6 +8,5 @@ using Functors: @functor
 @functor Linear
 @functor Translation
 @functor Affine
-@functor Rotation
 
 end

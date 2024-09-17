@@ -8,7 +8,6 @@ that can be applied to an array. A `Transformation` `t` can be applied to
 abstract type Transformation end
 
 function compose end
-function batchsize end
 
 """
     transform(t, x)
@@ -32,10 +31,10 @@ Base.show(io::IO, ::MIME"text/plain", t::Transformation) = print(io, summary(t))
 """
 struct Identity <: Transformation end
 
-transform(::Identity, x) = x
-inverse_transform(::Identity, x) = x
+@inline transform(::Identity, x) = x
+@inline inverse_transform(::Identity, x) = x
 
-Base.inv(::Identity) = Identity()
+@inline Base.inv(::Identity) = Identity()
 
 @inline compose(::Identity, ::Identity) = Identity()
 @inline compose(::Identity, t::Transformation) = t
@@ -92,12 +91,11 @@ struct Inverse{T<:Transformation} <: Transformation
     parent::T
 end
 
-Base.:(==)(t1::Inverse, t2::Inverse) = t1.parent == t2.parent
-
-batchsize(t::Inverse) = batchsize(t.parent)
+@inline Base.:(==)(t1::Inverse, t2::Inverse) = t1.parent == t2.parent
 
 @inline inverse(t::Transformation) = Inverse(t)
 @inline inverse(t::Inverse) = t.parent
+@inline inverse(t::Identity) = t
 
 @inline transform(t::Inverse, x) = inverse_transform(t.parent, x)
 

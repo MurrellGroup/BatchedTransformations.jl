@@ -16,6 +16,14 @@ function batched_mul_T2(x::AbstractArray{T1,N}, y::AbstractArray{T2,N}) where {T
     return reshape(z, size(z, 1), size(z, 2), batch_size...)
 end
 
+function batched_mul_large_small(A::AbstractArray, x::AbstractVecOrMat)
+    batch_size = size(A)[3:end]
+    A′ = reshape(A, size(A, 1), size(A, 2), :)
+    y′ = A′ ⊠ reshape(x, size(x, 1), size(x, 2))
+    y = reshape(y′, size(A, 1), size(x, 2), batch_size...)
+    return y
+end
+
 # might need custom chain rule
-# could do map(det, eachslice(data, dims=size(data)[3:end], drop=false))
+# could also try map(det, eachslice(data, dims=size(data)[3:end], drop=false))
 batched_det(data::AbstractArray{<:Real}) = mapslices(det, data, dims=(1,2))
