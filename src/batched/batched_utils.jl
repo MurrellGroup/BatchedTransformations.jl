@@ -1,26 +1,21 @@
-function batched_mul_T1(x::AbstractArray{T1,N}, y::AbstractArray{T2,N}) where {T1,T2,N}
-    batch_size = size(x)[3:end]
-    @assert batch_size == size(y)[3:end] "batch size has to be the same for the two arrays."
+function batched_mul_T1(x::AbstractArray, y::AbstractArray)
     x2 = reshape(x, size(x, 1), size(x, 2), :) |> batched_transpose
     y2 = reshape(y, size(y, 1), size(y, 2), :)
     z = batched_mul(x2, y2)
-    return reshape(z, size(z, 1), size(z, 2), batch_size...)
+    return reshape(z, size(z, 1), size(z, 2), size(x)[3:end]...)
 end
 
-function batched_mul_T2(x::AbstractArray{T1,N}, y::AbstractArray{T2,N}) where {T1,T2,N}
-    batch_size = size(x)[3:end]
-    @assert batch_size == size(y)[3:end] "batch size has to be the same for the two arrays."
+function batched_mul_T2(x::AbstractArray, y::AbstractArray)
     x2 = reshape(x, size(x, 1), size(x, 2), :)
     y2 = reshape(y, size(y, 1), size(y, 2), :) |> batched_transpose
     z = batched_mul(x2, y2)
-    return reshape(z, size(z, 1), size(z, 2), batch_size...)
+    return reshape(z, size(z, 1), size(z, 2), size(x)[3:end]...)
 end
 
 function batched_mul_large_small(A::AbstractArray, x::AbstractVecOrMat)
-    batch_size = size(A)[3:end]
     A′ = reshape(A, size(A, 1), size(A, 2), :)
-    y′ = A′ ⊠ reshape(x, size(x, 1), size(x, 2))
-    y = reshape(y′, size(A, 1), size(x, 2), batch_size...)
+    y′ = batched_mul(A′, reshape(x, size(x, 1), size(x, 2)))
+    y = reshape(y′, size(A, 1), size(x, 2))
     return y
 end
 
