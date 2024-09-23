@@ -12,11 +12,11 @@ function batched_mul_T2(x::AbstractArray, y::AbstractArray)
     return reshape(z, size(z, 1), size(z, 2), size(x)[3:end]...)
 end
 
-function batched_mul_large_small(A::AbstractArray, x::AbstractVecOrMat)
-    A′ = reshape(A, size(A, 1), size(A, 2), :)
-    y′ = batched_mul(A′, reshape(x, size(x, 1), size(x, 2)))
-    y = reshape(y′, size(A, 1), size(x, 2))
-    return y
+function batched_mul_large_small(x::AbstractArray, y::AbstractVecOrMat)
+    x′ = reshape(x, size(x, 1), size(x, 2), :)
+    z′ = batched_mul(x′, reshape(y, size(y, 1), size(y, 2)))
+    z = reshape(z′, size(x, 1), size(y, 2), size(x)[3:end]...)
+    return z
 end
 
 # might need custom chain rule
