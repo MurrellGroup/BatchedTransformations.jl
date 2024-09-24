@@ -1,4 +1,4 @@
-abstract type AbstractAffine <: GeometricTransformation end
+abstract type AbstractAffine{T} <: GeometricTransformation{T} end
 
 function translation end
 function linear end
@@ -9,7 +9,7 @@ abstract type Homomorphic end
 abstract type Endomorphic <: Homomorphic end
 abstract type Automorphic <: Endomorphic end
 
-struct Linear{M<:Homomorphic,A<:AbstractArray} <: AbstractAffine
+struct Linear{M<:Homomorphic,T,A<:AbstractArray{T}} <: AbstractAffine{T}
     values::A
 end
 
@@ -18,17 +18,17 @@ abstract type Orthonormal{Det} <: Automorphic end
 const Rotation = Linear{Orthonormal{1}}
 const Reflection = Linear{Orthonormal{-1}}
 
-@inline Linear{M}(values::A) where {M,A} = Linear{M,A}(values)
+@inline Linear{M}(values::A) where {M,T,A<:AbstractArray{T}} = Linear{M,T,A}(values)
 @inline Linear{M}(linear::Linear) where M = Linear{M}(values(linear))
 
-@inline function Linear{M}(values::A) where {M<:Endomorphic,A<:AbstractArray}
-    size(values, 1) == size(values, 2) || error("rotation values must have size (n, n, batchdims...)")
-    Linear{M,A}(values)
+@inline function Linear{M}(values::A) where {M<:Endomorphic,T,A<:AbstractArray{T}}
+    size(values, 1) == size(values, 2) || error("endomorphic linear map values must have size (n, n, batchdims...)")
+    Linear{M,T,A}(values)
 end
 
-@inline function Linear(values::A) where A<:AbstractArray
+@inline function Linear(values::A) where {T,A<:AbstractArray{T}}
     M = size(values, 1) == size(values, 2) ? Endomorphic : Homomorphic
-    Linear{M,A}(values)
+    Linear{M,T,A}(values)
 end
 
 @inline compose(l2::Linear{M1}, l1::Linear{M2}) where {M1<:Homomorphic,M2<:Homomorphic} = Linear{typejoin(M1,M2)}(l2 * values(l1))
@@ -59,21 +59,21 @@ inverse_transform(t::Linear{<:Orthonormal}, x::AbstractArray) = batched_mul_T1(v
 
 Base.inv(t::Linear{M}) where M<:Automorphic = Linear{M}(mapslices(inv, values(t), dims=(1,2)))
 
-Base.inv(t::Linear{M,<:AbstractArray{<:Any,2}}) where M<:Orthonormal = Linear{M}(transpose(values(t)))
-Base.inv(t::Linear{M,<:AbstractArray{<:Any,3}}) where M<:Orthonormal = Linear{M}(batched_transpose(values(t)))
+Base.inv(t::Linear{M,T,<:AbstractArray{T,2}}) where {M<:Orthonormal,T} = Linear{M}(transpose(values(t)))
+Base.inv(t::Linear{M,T,<:AbstractArray{<:Any,3}}) where {M<:Orthonormal,T} = Linear{M}(batched_transpose(values(t)))
 Base.inv(t::Linear{M}) where M<:Orthonormal = Linear{M}(permutedims(values(t), (2, 1, 3:ndims(values(t))...)))
 
 
-struct Translation{A<:AbstractArray} <: AbstractAffine
+struct Translation{T,A<:AbstractArray{T}} <: AbstractAffine{T}
     values::A
 
-    function Translation{A}(values::A) where A<:AbstractArray
+    function Translation{T,A}(values::A) where {T,A<:AbstractArray{T}}
         size(values, 2) == 1 || error("translation values must have size (n, 1, batchdims...)")
-        new{A}(values)
+        new{T,A}(values)
     end
 end
 
-Translation(values::A) where A = Translation{A}(values)
+Translation(values::A) where {T,A<:AbstractArray{T}} = Translation{T,A}(values)
 
 @inline linear(::Translation) = Identity()
 @inline translation(translation::Translation) = translation
@@ -101,20 +101,18 @@ Base.inv(t::Translation) = Translation(-values(t))
 @inline compose(t2::Translation, t1::Translation) = Translation(t2 * values(t1))
 
 
-struct Affine{T<:Translation,L<:Linear{<:Automorphic}} <: AbstractAffine
-    composed::Composed{T,L}
+struct Affine{T,O<:Translation{T},I<:Linear{<:Automorphic,T}} <: AbstractAffine{T}
+    composed::Composed{O,I}
 end
 
-const Rigid = Affine{<:Translation,<:Rotation}
+const Rigid = Affine{T,<:Translation,<:Rotation} where T
 
 @inline linear(affine::Affine) = inner(affine.composed)
 @inline translation(affine::Affine) = outer(affine.composed)
 
 @inline Base.:(==)(affine1::Affine, affine2::Affine) = affine1.composed == affine2.composed
 
-function batchunsqueeze((translation,linear)::Affine; dims::Int)
-    batchunsqueeze(translation; dims) ∘ batchunsqueeze(linear; dims)
-end
+batchunsqueeze((t,l)::Affine; dims::Int) = batchunsqueeze(t; dims) ∘ batchunsqueeze(l; dims)
 
 transform(affine::Affine, x::AbstractArray) = transform(affine.composed, x)
 inverse_transform(affine::Affine, x::AbstractArray) = inverse_transform(affine.composed, x)
