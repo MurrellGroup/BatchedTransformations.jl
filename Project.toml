@@ -21,7 +21,7 @@ FunctorsExt = "Functors"
 [compat]
 Adapt = "4"
 ChainRulesCore = "1"
-Functors = "0.4"
+Functors = "0.4, 0.5"
 LinearAlgebra = "1"
 MLUtils = "0.4"
 NNlib = "0.8, 0.9"
