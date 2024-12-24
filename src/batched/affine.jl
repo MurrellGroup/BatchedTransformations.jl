@@ -43,12 +43,12 @@ batchsize(linear::Linear) = size(values(linear))[3:end]
 
 function batchrepeat(linear::Linear{M}, args...) where M
     A = values(linear)
-    Linear{M}(repeat(A, size(A, 1), size(A, 2), args...))
+    Linear{M}(repeat(A, 1, 1, args...))
 end
 
 function batchreshape(linear::Linear{M}, args...) where M
     A = values(linear)
-    Linear{M}(reshape(A, 1, 1, args...))
+    Linear{M}(reshape(A, size(A, 1), size(A, 2), args...))
 end
 
 function batchunsqueeze(linear::Linear{M}; dims::Int) where M
