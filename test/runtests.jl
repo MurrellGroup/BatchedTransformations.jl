@@ -78,6 +78,7 @@ using ChainRulesTestUtils: test_rrule
                 @test inv(invertible_l) * (invertible_l * x) ≈ x
 
                 @test batchsize(l) == batchdims
+                @test batchsize(batchrepeat(l, 2, 2)) == 2 .* batchdims
                 @test batchsize(batchreshape(l, 1, batchdims...)) == (1, batchdims...)
                 @test batchsize(batchunsqueeze(l, dims=1)) == (1, batchdims...)
             end
@@ -91,6 +92,7 @@ using ChainRulesTestUtils: test_rrule
                 @test inv(t) * (t * x) ≈ x
 
                 @test batchsize(t) == batchdims
+                @test batchsize(batchrepeat(t, 2, 2)) == 2 .* batchdims
                 @test batchsize(batchreshape(t, 1, batchdims...)) == (1, batchdims...)
                 @test batchsize(batchunsqueeze(t, dims=1)) == (1, batchdims...)
             end

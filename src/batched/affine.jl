@@ -41,6 +41,11 @@ end
 
 batchsize(linear::Linear) = size(values(linear))[3:end]
 
+function batchrepeat(linear::Linear, args...)
+    A = values(linear)
+    Linear(repeat(A, size(A, 1), size(A, 2), args...))
+end
+
 function batchreshape(linear::Linear{M}, args...) where M
     A = values(linear)
     Linear{M}(reshape(A, size(A, 1), size(A, 2), args...))
@@ -82,6 +87,11 @@ Translation(values::A) where {T,A<:AbstractArray{T}} = Translation{T,A}(values)
 @inline Base.:(==)(t1::Translation, t2::Translation) = values(t1) == values(t2)
 
 batchsize(translation::Translation) = size(values(translation))[3:end]
+
+function batchrepeat(translation::Translation, args...)
+    b = values(translation)
+    Translation(repeat(b, size(b, 1), 1, args...))
+end
 
 function batchreshape(translation::Translation, args...)
     b = values(translation)

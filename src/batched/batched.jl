@@ -4,6 +4,7 @@ using MLUtils: unsqueeze
 include("batched_utils.jl")
 
 function batchsize end
+function batchrepeat end
 function batchreshape end
 function batchunsqueeze end
 

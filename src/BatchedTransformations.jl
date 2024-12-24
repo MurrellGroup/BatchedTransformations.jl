@@ -9,7 +9,7 @@ export Inverse, inverse
 
 include("batched/batched.jl")
 export BatchedTransformation
-export batchsize, batchreshape, batchunsqueeze
+export batchsize, batchrepeat, batchreshape, batchunsqueeze
 export AbstractAffine, translation, linear
 export Translation
 export Homomorphic, Endomorphic, Automorphic
