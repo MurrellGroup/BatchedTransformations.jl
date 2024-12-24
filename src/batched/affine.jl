@@ -41,9 +41,9 @@ end
 
 batchsize(linear::Linear) = size(values(linear))[3:end]
 
-function batchrepeat(linear::Linear, args...)
+function batchrepeat(linear::Linear{M}, args...) where M
     A = values(linear)
-    Linear(repeat(A, size(A, 1), size(A, 2), args...))
+    Linear{M}(repeat(A, size(A, 1), size(A, 2), args...))
 end
 
 function batchreshape(linear::Linear{M}, args...) where M
@@ -122,7 +122,14 @@ const Rigid = Affine{T,<:Translation,<:Rotation} where T
 
 @inline Base.:(==)(affine1::Affine, affine2::Affine) = affine1.composed == affine2.composed
 
-batchunsqueeze((t,l)::Affine; dims::Int) = batchunsqueeze(t; dims) ∘ batchunsqueeze(l; dims)
+batchrepeat(affine::Affine, args...) =
+    batchrepeat(translation(affine), args...) ∘ batchrepeat(linear(affine), args...)
+
+batchreshape(affine::Affine, args...) =
+    batchreshape(translation(affine), args...) ∘ batchreshape(linear(affine), args...)
+
+batchunsqueeze((t,l)::Affine; dims::Int) =
+    batchunsqueeze(t; dims) ∘ batchunsqueeze(l; dims)
 
 transform(affine::Affine, x::AbstractArray) = transform(affine.composed, x)
 inverse_transform(affine::Affine, x::AbstractArray) = inverse_transform(affine.composed, x)
