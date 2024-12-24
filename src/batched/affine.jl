@@ -48,7 +48,7 @@ end
 
 function batchreshape(linear::Linear{M}, args...) where M
     A = values(linear)
-    Linear{M}(reshape(A, size(A, 1), size(A, 2), args...))
+    Linear{M}(reshape(A, 1, 1, args...))
 end
 
 function batchunsqueeze(linear::Linear{M}; dims::Int) where M
@@ -90,7 +90,7 @@ batchsize(translation::Translation) = size(values(translation))[3:end]
 
 function batchrepeat(translation::Translation, args...)
     b = values(translation)
-    Translation(repeat(b, size(b, 1), 1, args...))
+    Translation(repeat(b, 1, 1, args...))
 end
 
 function batchreshape(translation::Translation, args...)
