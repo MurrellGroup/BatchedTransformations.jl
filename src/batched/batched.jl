@@ -1,5 +1,6 @@
-using NNlib: ⊠, batched_mul, batched_transpose
+using NNlib: ⊠, batched_mul, batched_vec, batched_transpose
 using MLUtils: unsqueeze
+using EllipsisNotation
 
 include("batched_utils.jl")
 
@@ -14,6 +15,7 @@ batchsize(t::Inverse{<:Transformation}) = batchsize(t.parent)
 abstract type GeometricTransformation{T} <: Transformation end
 
 include("affine.jl")
+include("quaternions.jl")
 include("rand.jl")
 
 using Adapt

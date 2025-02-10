@@ -33,6 +33,11 @@ function Base.rand(rng::AbstractRNG, T::Type{<:Real}, ::Type{Rotation}, n::Integ
     return Rotation(values)
 end
 
+function Base.rand(rng::AbstractRNG, T::Type{<:Real}, ::Type{QuaternionRotation}, n::Integer, batchdims::Dims=())
+    @assert n == 3
+    return convert(QuaternionRotation, rand(rng, T, Rotation, 3, batchdims))
+end
+
 function Base.rand(rng::AbstractRNG, T::Type{<:Real}, ::Type{Rigid}, n::Integer, batchdims::Dims=())
     translations = rand(rng, T, Translation, n, batchdims)
     rotations = rand(rng, T, Rotation, n, batchdims)

@@ -1,13 +1,15 @@
 name = "BatchedTransformations"
 uuid = "8ba27c4b-52b5-4b10-bc66-a4fda05aa11b"
 authors = ["Anton Oresten <anton.oresten42@gmail.com> and contributors"]
-version = "0.5.5"
+version = "0.6.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+EllipsisNotation = "da5c29d0-fa7d-589e-88eb-ea29b0a81949"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MLUtils = "f1d291b0-491e-4a28-83b9-f70985020b54"
 NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
+PaddedViews = "5432bcbf-9aad-5242-b902-cca2824c8663"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [weakdeps]
@@ -21,10 +23,12 @@ FunctorsExt = "Functors"
 [compat]
 Adapt = "4"
 ChainRulesCore = "1"
+EllipsisNotation = "1.8.0"
 Functors = "0.4, 0.5"
 LinearAlgebra = "1"
 MLUtils = "0.4"
 NNlib = "0.8, 0.9"
+PaddedViews = "0.5.12"
 Random = "1"
 julia = "1.9"
 

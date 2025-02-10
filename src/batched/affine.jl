@@ -9,7 +9,9 @@ abstract type Homomorphic end
 abstract type Endomorphic <: Homomorphic end
 abstract type Automorphic <: Endomorphic end
 
-struct Linear{M<:Homomorphic,T,A<:AbstractArray{T}} <: AbstractAffine{T}
+abstract type AbstractLinear{M,T} <: AbstractAffine{T} end
+
+struct Linear{M<:Homomorphic,T,A<:AbstractArray{T}} <: AbstractLinear{M,T}
     values::A
 end
 

@@ -15,5 +15,6 @@ export Translation
 export Homomorphic, Endomorphic, Automorphic
 export Linear, Orthonormal, Rotation, Reflection
 export Affine, Rigid
+export QuaternionRotation, imaginary_to_quaternion_rotations
 
 end

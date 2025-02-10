@@ -135,6 +135,33 @@ using ChainRulesTestUtils: test_rrule
 
         end
 
+        @testset "quaternions.jl" begin
+            q = rand(Float32, QuaternionRotation, 3, (2,))
+            @test q * q isa QuaternionRotation
+            @test inv(q) * q isa QuaternionRotation
+            p = rand(Float32, 3, 2, 1, 3)
+            @test q * p isa AbstractArray
+            @test inv(q) * p isa AbstractArray
+            @test isapprox((inv(q) * q) * p, p, atol=1e-6)
+            @test isapprox(inv(q) * (q * p), p, atol=1e-6)
+
+            @testset "imaginary_to_quaternion_rotations" begin
+                function angle_between_vectors(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
+                    size(a, 1) == size(b, 1) || throw(DimensionMismatch("Vectors must have same dimension"))
+                    a_norms² = sum(a.^2, dims=1)
+                    b_norms² = sum(b.^2, dims=1)
+                    cos_theta = clamp.(sum(a .* b, dims=1) ./ sqrt.(a_norms² .* b_norms²), -1.0, 1.0)
+                    angles = acos.(cos_theta)
+                    return angles
+                end
+                p = randn(3, 10)
+                bcd = randn(3, 10)
+                q_small = QuaternionRotation(imaginary_to_quaternion_rotations(bcd))
+                q_large = QuaternionRotation(imaginary_to_quaternion_rotations(10 * bcd))
+                @test all(angle_between_vectors(q_small(p), p) .< angle_between_vectors(q_large(p), p))
+            end
+        end
+
         @testset "rand.jl" begin
 
             @testset "Rotation" begin
