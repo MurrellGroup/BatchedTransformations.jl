@@ -40,10 +40,10 @@ function transform(q::QuaternionRotation, p::QuaternionRotation)
     qw, qx, qy, qz = q.w, q.x, q.y, q.z
     pw, px, py, pz = p.w, p.x, p.y, p.z
     return QuaternionRotation([
-        qw .* pw - qx .* px - qy .* py - qz .* pz
-        qw .* px + qx .* pw + qy .* pz - qz .* py
-        qw .* py - qx .* pz + qy .* pw + qz .* px
-        qw .* pz + qx .* py - qy .* px + qz .* pw
+        qw .* pw .- qx .* px .- qy .* py .- qz .* pz
+        qw .* px .+ qx .* pw .+ qy .* pz .- qz .* py
+        qw .* py .- qx .* pz .+ qy .* pw .+ qz .* px
+        qw .* pz .+ qx .* py .- qy .* px .+ qz .* pw
     ])
 end
 
@@ -63,22 +63,22 @@ function Base.convert(::Type{QuaternionRotation}, r::Rotation)
     @views r31, r32, r33 = R[3:3, 1:1, ..], R[3:3, 2:2, ..], R[3:3, 3:3, ..]
 
     # 4x1xB...
-    q0 = [1 .+ r11 + r22 + r33
-          r32 - r23
-          r13 - r31
-          r21 - r12]
-    q1 = [r32 - r23
-          1 .+ r11 - r22 - r33
-          r12 + r21
-          r13 + r31]
-    q2 = [r13 - r31
-          r12 + r21
-          1 .- r11 + r22 - r33
-          r23 + r32]
-    q3 = [r21 - r12
-          r13 + r31
-          r23 + r32
-          1 .- r11 - r22 + r33]
+    q0 = [1 .+ r11 .+ r22 .+ r33
+          r32 .- r23
+          r13 .- r31
+          r21 .- r12]
+    q1 = [r32 .- r23
+          1 .+ r11 .- r22 .- r33
+          r12 .+ r21
+          r13 .+ r31]
+    q2 = [r13 .- r31
+          r12 .+ r21
+          1 .- r11 .+ r22 .- r33
+          r23 .+ r32]
+    q3 = [r21 .- r12
+          r13 .+ r31
+          r23 .+ r32
+          1 .- r11 .- r22 .+ r33]
 
     # 4x4xB...
     qs = hcat(q0, q1, q2, q3)
@@ -119,9 +119,9 @@ function Base.convert(::Type{Rotation}, qr::QuaternionRotation{T}) where T<:Numb
 
     h = T(1 // 2)
     return Rotation(2 * [
-        h .- (cc + dd)        bc - ad         bd + ac
-              bc + ad   h .- (bb + dd)        cd - ab
-              bd - ac         cd + ab   h .- (bb + cc)
+        h .- cc .- dd        bc .- ad        bd .+ ac
+             bc .+ ad   h .- bb .- dd        cd .- ab
+             bd .- ac        cd .+ ab   h .- bb .- cc
     ])
 end
 
