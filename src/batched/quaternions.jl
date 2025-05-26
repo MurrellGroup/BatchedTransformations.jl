@@ -107,21 +107,20 @@ function Base.convert(::Type{Rotation}, qr::QuaternionRotation{T}) where T<:Numb
     @views c = unsqueeze(Q[3:3, ..], dims=1)
     @views d = unsqueeze(Q[4:4, ..], dims=1)
 
-    ab = a .* b
-    ac = a .* c
-    ad = a .* d
-    bb = b .^ 2
-    bc = b .* c
-    bd = b .* d
-    cc = c .^ 2
-    cd = c .* d
-    dd = d .^ 2
+    ab = 2 .* a .* b
+    ac = 2 .* a .* c
+    ad = 2 .* a .* d
+    bb = 2 .* b .^ 2
+    bc = 2 .* b .* c
+    bd = 2 .* b .* d
+    cc = 2 .* c .^ 2
+    cd = 2 .* c .* d
+    dd = 2 .* d .^ 2
 
-    h = T(1 // 2)
-    return Rotation(2 * [
-        h .- cc .- dd        bc .- ad        bd .+ ac
-             bc .+ ad   h .- bb .- dd        cd .- ab
-             bd .- ac        cd .+ ab   h .- bb .- cc
+    return Rotation([
+        1 .- cc .- dd        bc .- ad        bd .+ ac
+             bc .+ ad   1 .- bb .- dd        cd .- ab
+             bd .- ac        cd .+ ab   1 .- bb .- cc
     ])
 end
 
