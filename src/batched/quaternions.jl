@@ -33,18 +33,18 @@ norms(A::AbstractArray{<:Number}; dims=1) = sqrt.(sum(abs2, A; dims))
 function Base.inv(qr::QuaternionRotation)
     Q = values(qr)
     @views a, bcd = Q[1:1, ..], Q[2:4, ..]
-    return QuaternionRotation([a; -bcd])
+    return QuaternionRotation(cat(a, -bcd, dims=1))
 end
 
 function transform(q::QuaternionRotation, p::QuaternionRotation)
     qw, qx, qy, qz = q.w, q.x, q.y, q.z
     pw, px, py, pz = p.w, p.x, p.y, p.z
-    return QuaternionRotation([
-        qw .* pw .- qx .* px .- qy .* py .- qz .* pz
-        qw .* px .+ qx .* pw .+ qy .* pz .- qz .* py
-        qw .* py .- qx .* pz .+ qy .* pw .+ qz .* px
-        qw .* pz .+ qx .* py .- qy .* px .+ qz .* pw
-    ])
+    return QuaternionRotation(cat(
+        qw .* pw .- qx .* px .- qy .* py .- qz .* pz,
+        qw .* px .+ qx .* pw .+ qy .* pz .- qz .* py,
+        qw .* py .- qx .* pz .+ qy .* pw .+ qz .* px,
+        qw .* pz .+ qx .* py .- qy .* px .+ qz .* pw,
+        dims=1))
 end
 
 function transform(q::QuaternionRotation, p::AbstractArray{<:Number})
@@ -63,22 +63,10 @@ function Base.convert(::Type{QuaternionRotation}, r::Rotation)
     @views r31, r32, r33 = R[3:3, 1:1, ..], R[3:3, 2:2, ..], R[3:3, 3:3, ..]
 
     # 4x1xB...
-    q0 = [1 .+ r11 .+ r22 .+ r33
-          r32 .- r23
-          r13 .- r31
-          r21 .- r12]
-    q1 = [r32 .- r23
-          1 .+ r11 .- r22 .- r33
-          r12 .+ r21
-          r13 .+ r31]
-    q2 = [r13 .- r31
-          r12 .+ r21
-          1 .- r11 .+ r22 .- r33
-          r23 .+ r32]
-    q3 = [r21 .- r12
-          r13 .+ r31
-          r23 .+ r32
-          1 .- r11 .- r22 .+ r33]
+    q0 = cat(1 .+ r11 .+ r22 .+ r33, r32 .- r23, r13 .- r31, r21 .- r12, dims=1)
+    q1 = cat(r32 .- r23, 1 .+ r11 .- r22 .- r33, r12 .+ r21, r13 .+ r31, dims=1)
+    q2 = cat(r13 .- r31, r12 .+ r21, 1 .- r11 .+ r22 .- r33, r23 .+ r32, dims=1)
+    q3 = cat(r21 .- r12, r13 .+ r31, r23 .+ r32, 1 .- r11 .- r22 .+ r33, dims=1)
 
     # 4x4xB...
     qs = hcat(q0, q1, q2, q3)
@@ -117,11 +105,10 @@ function Base.convert(::Type{Rotation}, qr::QuaternionRotation{T}) where T<:Numb
     cd = 2 .* c .* d
     dd = 2 .* d .^ 2
 
-    return Rotation([
-        1 .- cc .- dd        bc .- ad        bd .+ ac
-             bc .+ ad   1 .- bb .- dd        cd .- ab
-             bd .- ac        cd .+ ab   1 .- bb .- cc
-    ])
+    row1 = cat(1 .- cc .- dd, bc .- ad, bd .+ ac, dims=2)
+    row2 = cat(bc .+ ad, 1 .- bb .- dd, cd .- ab, dims=2)
+    row3 = cat(bd .- ac, cd .+ ab, 1 .- bb .- cc, dims=2)
+    return Rotation(cat(row1, row2, row3, dims=1))
 end
 
 """
@@ -135,5 +122,5 @@ function imaginary_to_quaternion_rotations(bcd::AbstractArray{T}, a²::T=T(1)) w
     size(bcd, 1) == 3 || throw(ArgumentError("bcd must have shape 3xB..."))
     norms = sqrt.(a² .+ sum(abs2, bcd, dims=1))
     a = sqrt(a²)
-    return [a ./ norms; bcd ./ norms]
+    return cat(a ./ norms, bcd ./ norms, dims=1)
 end
